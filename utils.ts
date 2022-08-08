@@ -62,19 +62,34 @@ export function printBoard(board: number[]) {
   ]);
 }
 
-function getValidNumCount(arr: number[]) {
-  return [...new Set(arr)].filter((item) => !!item).length;
+function getValidNumCount(arr: Array<number | string>) {
+  return arr.filter((item) => !!item).length;
 }
 
-function hasEmpty(arr: number[]) {
+function hasEmpty(arr: Array<number | string>) {
   return arr.some((item) => !item);
 }
 
-function distinctElemCount(arr: number[]) {
+function nonEmptyDistinctElemCount(arr: Array<number | string>) {
+  return [...new Set(arr)].filter((item) => !!item).length;
+}
+
+function nonEmptyDistinctElem(arr: Array<number | string>): number {
+  // @ts-ignore
+  return [...new Set(arr)].find((item) => !!item);
+}
+
+function distinctElemCount(arr: Array<number | string>) {
   return new Set(arr).size;
 }
 
-function calculateRow(columns: number[]) {
+function generateEmptyArr(length: number) {
+  return Array.from({ length }, () => "");
+}
+
+export function calculateRow(
+  columns: Array<number | string>,
+): Array<number | string> {
   const COL_LENGTH = columns.length;
   if (columns.join("") === "") {
     // 每个格子都是空的
@@ -82,33 +97,113 @@ function calculateRow(columns: number[]) {
   } else if (getValidNumCount(columns) === 1) {
     // 只有一个数字 eg [2, '', '', '']
     return [
+      // @ts-ignore
       Math.max(...columns),
-      ...Array.from({ length: COL_LENGTH - 1 }, () => ""),
+      ...generateEmptyArr(COL_LENGTH - 1),
     ];
   } else if (getValidNumCount(columns) === 2) {
     // 有两个数字
-    if (distinctElemCount(columns) === 2) {
+    if (nonEmptyDistinctElemCount(columns) === 1) {
       // 如果两个数字相同 eg: [2, 2, '', ''], ['', 2, '', 2]
+      // @ts-ignore
       const sum = columns.filter((v) => !!v).reduce((a, b) => a + b);
-      return [sum, ...Array.from({ length: COL_LENGTH - 1 }, () => "")];
+      return [sum, ...generateEmptyArr(COL_LENGTH - 1)];
     } else {
       // 如果两个数字不同 eg: [2, 4, '', ''], [2, '', 4, '']
       return [
         ...columns.filter((v) => !!v),
-        ...Array.from({ length: COL_LENGTH - 2 }, () => ""),
+        ...generateEmptyArr(COL_LENGTH - 2),
       ];
     }
   } else if (getValidNumCount(columns) === 3) {
     // 有三个数字
-
-    // 三个数字都相同 eg: [2, 2, 2, ''], ['', 2, 2, 2], [2, 2, '', 2], [2, '', 2, 2]
-
-    // 三个数字有2个相同 eg: [2, 2, 4, ''], [4, 2, 2, ''], [2, 4, '', 2], ['', 2, 2, 4]
-
-    // 三个数字都不相同 eg [2, 4, 8, '']
+    if (nonEmptyDistinctElemCount(columns) === 1) {
+      // 三个数字都相同 eg: [2, 2, 2, ''], ['', 2, 2, 2], [2, 2, '', 2], [2, '', 2, 2]
+      const elem = nonEmptyDistinctElem(columns);
+      return [
+        elem + elem,
+        elem,
+        ...generateEmptyArr(COL_LENGTH - 2),
+      ];
+    } else if (nonEmptyDistinctElemCount(columns) === 2) {
+      // 三个数字有2个相同
+      const nums = columns.filter((v) => !!v);
+      if (nums[0] === nums[1]) {
+        // case1 相同数字相邻  eg: [2, 2, 4, ''], ['', 2, 2, 4]
+        // case2 相同数字间隔‘’ eg: [2, '', 2, 4]
+        return [
+          // @ts-ignore
+          nums[0] + nums[1],
+          nums[2],
+          ...generateEmptyArr(COL_LENGTH - 2),
+        ];
+      } else if (nums[1] === nums[2]) {
+        // case1 相同数字相邻  eg:  [4, 2, 2, ''],  ['', 4, 2, 2], [4, '', 2, 2],
+        // case2 相同数字间隔‘’ eg:  [4, 2, '', 2]
+        return [
+          nums[0],
+          // @ts-ignore
+          nums[1] + nums[2],
+          ...generateEmptyArr(COL_LENGTH - 2),
+        ];
+      } else {
+        // 相同数字不相邻 eg: [2,4,2, ''], [2, '', 4, 2]
+        return nums.concat("");
+      }
+    } else {
+      // 三个数字都不相同 eg [2, 4, 8, '']
+      return columns.filter((v) => !!v).concat("");
+    }
   } else if (getValidNumCount(columns) === COL_LENGTH) {
     // 有四个数字
+    if (distinctElemCount(columns) === 1) {
+      // 四个数字都相同 eg: [2, 2, 2, 2]
+      // @ts-ignore
+      const sum = columns[0] + columns[0];
+      return [sum, sum, ...generateEmptyArr(COL_LENGTH - 2)];
+    } else if (distinctElemCount(columns) === 3) {
+      if (columns[0] === columns[1]) {
+        // 四个数字有2个相同 eg: [2, 2, 4, 8]
+        // @ts-ignore
+        return [columns[0] + columns[1], columns[2], columns[3], ""];
+      } else if (columns[1] === columns[2]) {
+        // 四个数字有2个相同 eg: [4, 2, 2, 8]
+        // @ts-ignore
+        return [columns[0], columns[1] + columns[2], columns[3], ""];
+      } else if (columns[2] === columns[3]) {
+        // 四个数字有2个相同 eg: [4, 8, 2, 2]
+        // @ts-ignore
+        return [columns[0], columns[1], columns[2] + columns[3], ""];
+      }
+      return columns;
+    } else if (distinctElemCount(columns) === 2) {
+      if (columns[0] === columns[1] && columns[2] === columns[3]) {
+        // 四个数字两两相同 eg: [2,2,4,4]
+        // @ts-ignore
+        return [columns[0] + columns[1], columns[2] + columns[3], "", ""];
+      } else if (columns[0] === columns[2] && columns[1] === columns[3]) {
+        // 四个数字两两相同 eg: [2,4,2,4]
+        return columns;
+      } else if (columns[0] === columns[3] && columns[1] === columns[2]) {
+        // 四个数字两两相同 eg: [2,4,4,2]
+        // @ts-ignore
+        return [columns[0], columns[1] + columns[2], columns[3], ""];
+      } else if (columns[0] === columns[1]) {
+        // 有3个数字相同 eg: [2,2,2,4], [2,2,4,2]
+        // @ts-ignore
+        return [columns[0] + columns[1], columns[2], columns[3], ""];
+      } else if (columns[1] === columns[2]) {
+        // 有3个数字相同 eg: [4,2,2,2]
+        // @ts-ignore
+        return [columns[0], columns[1] + columns[2], columns[3], ""];
+      }
+    }
+
+    // 四个数字都不相同
+    return columns;
   }
+
+  return columns;
 }
 
 function moveToTop(arr: number[]) {
