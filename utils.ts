@@ -27,6 +27,27 @@ export function getTwoPosition(): { first: number[]; second: number[] } {
   };
 }
 
+export function getEmptyPositions(arr: Array<number | string>) {
+  return arr.reduce((acc, item, index) => {
+    if (!item) {
+      acc.push(index);
+    }
+    return acc;
+  }, [] as Array<number>);
+}
+
+export function setNewNumber(board: Array<number | string>) {
+  const newBoard = board.slice();
+  const emptyPositions = getEmptyPositions(board);
+  if (emptyPositions.length === 0) {
+    return board;
+  }
+  const randomPosition =
+    emptyPositions[getRandomIntInclusive(0, emptyPositions.length - 1)];
+  newBoard[randomPosition] = getRandomIntInclusive(0, 10) > 7 ? 4 : 2;
+  return newBoard;
+}
+
 /**
  * 初始化棋盘，2 - 2（70%） , 2 - 4（20%）, 4 - 4（10%）
  */
