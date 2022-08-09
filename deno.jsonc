@@ -1,6 +1,7 @@
 {
   "tasks": {
-    "test": "deno test --coverage=code_coverage",
+    "test": "deno test",
+    "test:cov": "deno run --allow-read=./code_coverage --allow-write=./code_coverage rm-cov.ts && deno test --coverage=code_coverage",
     "coverage": "deno coverage code_coverage"
   }
 }

@@ -53,7 +53,7 @@ export function initBoard(board: number[]) {
  * 打印棋盘
  * @param board
  */
-export function printBoard(board: number[]) {
+export function printBoard(board: Array<number | string>) {
   console.table([
     board.slice(0, 4),
     board.slice(4, 8),
@@ -66,8 +66,8 @@ function getValidNumCount(arr: Array<number | string>) {
   return arr.filter((item) => !!item).length;
 }
 
-function hasEmpty(arr: Array<number | string>) {
-  return arr.some((item) => !item);
+function isBoardFull(arr: Array<number | string>) {
+  return arr.every((item) => !!item);
 }
 
 function nonEmptyDistinctElemCount(arr: Array<number | string>) {
@@ -83,10 +83,15 @@ function distinctElemCount(arr: Array<number | string>) {
   return new Set(arr).size;
 }
 
-function generateEmptyArr(length: number) {
+export function generateEmptyArr(length: number) {
   return Array.from({ length }, () => "");
 }
 
+/**
+ * 计算移动后的数据
+ * @param columns
+ * @returns
+ */
 export function calculateRow(
   columns: Array<number | string>,
 ): Array<number | string> {
@@ -206,14 +211,133 @@ export function calculateRow(
   return columns;
 }
 
-function moveToTop(arr: number[]) {
+/**
+ * 向上移动
+ * @param arr
+ * @returns
+ */
+export function moveToTop(arr: Array<number | string>) {
+  const board = Array(16).fill("");
+  [board[0], board[4], board[8], board[12]] = calculateRow(
+    arr.filter((_, i) => i % 4 === 0),
+  );
+  [board[1], board[5], board[9], board[13]] = calculateRow(
+    arr.filter((_, i) => i % 4 === 1),
+  );
+  [board[2], board[6], board[10], board[14]] = calculateRow(
+    arr.filter((_, i) => i % 4 === 2),
+  );
+  [board[3], board[7], board[11], board[15]] = calculateRow(
+    arr.filter((_, i) => i % 4 === 3),
+  );
+  return board;
 }
 
-function moveToBottom(columns: number[]) {
+/**
+ * 向下移动
+ * @param arr
+ * @returns
+ */
+export function moveToBottom(arr: Array<number | string>) {
+  const board = Array(16).fill("");
+  [board[0], board[4], board[8], board[12]] = calculateRow(
+    arr.filter((_, i) => i % 4 === 0).reverse(),
+  ).reverse();
+  [board[1], board[5], board[9], board[13]] = calculateRow(
+    arr.filter((_, i) => i % 4 === 1).reverse(),
+  ).reverse();
+  [board[2], board[6], board[10], board[14]] = calculateRow(
+    arr.filter((_, i) => i % 4 === 2).reverse(),
+  ).reverse();
+  [board[3], board[7], board[11], board[15]] = calculateRow(
+    arr.filter((_, i) => i % 4 === 3).reverse(),
+  ).reverse();
+  return board;
 }
 
-function moveToLeft(columns: number[]) {
+/**
+ * 向左移动
+ * @param arr
+ * @returns
+ */
+export function moveToLeft(arr: Array<number | string>) {
+  const board = Array(16).fill("");
+  [board[0], board[1], board[2], board[3]] = calculateRow(
+    arr.slice(0, 4),
+  );
+  [board[4], board[5], board[6], board[7]] = calculateRow(
+    arr.slice(4, 8),
+  );
+  [board[8], board[9], board[10], board[11]] = calculateRow(
+    arr.slice(8, 12),
+  );
+  [board[12], board[13], board[14], board[15]] = calculateRow(
+    arr.slice(12, 16),
+  );
+  return board;
 }
 
-function moveToRight(columns: number[]) {
+/**
+ * 向右移动
+ * @param arr
+ * @returns
+ */
+export function moveToRight(arr: Array<number | string>) {
+  const board = Array(16).fill("");
+  [board[0], board[1], board[2], board[3]] = calculateRow(
+    arr.slice(0, 4).reverse(),
+  ).reverse();
+  [board[4], board[5], board[6], board[7]] = calculateRow(
+    arr.slice(4, 8).reverse(),
+  ).reverse();
+  [board[8], board[9], board[10], board[11]] = calculateRow(
+    arr.slice(8, 12).reverse(),
+  ).reverse();
+  [board[12], board[13], board[14], board[15]] = calculateRow(
+    arr.slice(12, 16).reverse(),
+  ).reverse();
+  return board;
+}
+
+/**
+ * 是否包含相邻且相同的数字
+ * @param arr
+ */
+export function hasSameNumberNearby(arr: Array<number | string>) {
+  if (!Array.isArray(arr) || arr.length === 0 || arr.length === 1) {
+    return false;
+  }
+  let i = 0, j = 1;
+  for (; i < arr.length - 1; i++, j++) {
+    if (arr[i] === arr[j]) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * 检查是否游戏结束
+ * @param board
+ * @returns
+ */
+export function checkGameOver(board: Array<number | string>) {
+  if (!isBoardFull(board)) {
+    return false;
+  }
+
+  return [
+    hasSameNumberNearby(board.slice(0, 4)),
+    hasSameNumberNearby(board.slice(4, 8)),
+    hasSameNumberNearby(board.slice(8, 12)),
+    hasSameNumberNearby(board.slice(12, 16)),
+    hasSameNumberNearby(board.filter((_, i) => i % 4 === 0)),
+    hasSameNumberNearby(board.filter((_, i) => i % 4 === 1)),
+    hasSameNumberNearby(board.filter((_, i) => i % 4 === 2)),
+    hasSameNumberNearby(board.filter((_, i) => i % 4 === 3)),
+  ].every((item) => item === false);
+}
+
+export function checkWin(board: Array<string | number>) {
+  return board.find((v) => v === 2048) != undefined;
 }
