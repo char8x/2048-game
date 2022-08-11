@@ -70,17 +70,50 @@ export function initBoard(board: number[]) {
   return board;
 }
 
+const COLOR_MAP: Record<number, string> = {
+  2: "color: #776e65; background-color: #eee4da",
+  4: "color: #776e65; background-color: #eee1c9",
+  8: "color: #f9f6f2; background-color: #f3b27a",
+  16: "color: #f9f6f2;background-color: #f69664",
+  32: "color: #f9f6f2;background-color: #f77c5f",
+  64: "color: #f9f6f2;background-color: #f75f3b",
+  128: "color: #f9f6f2; background-color: #edd073",
+  256: "color: #f9f6f2; background-color: #edcc62",
+  512: "color: #f9f6f2; background-color: #edc950",
+  1024: "color:#f9f6f2; background-color: #edc53f",
+  2014: "color:#f9f6f2; background-color: #edc22e",
+};
+
+function generateConsoleColors(arr: Array<number | string>) {
+  return arr.map((item) => {
+    if (!item) return "background-color: #faf8ef";
+    return `${COLOR_MAP[item as number]}`;
+  });
+}
+
+function generateConsoleOutput(arr: Array<number | string>) {
+  return arr.map((item) => {
+    if (!item) return "%c''";
+    return `%c${item}`;
+  }).join(" ");
+}
+
+function consoleLog(arr: Array<number | string>) {
+  console.log(
+    generateConsoleOutput(arr),
+    ...generateConsoleColors(arr),
+  );
+}
+
 /**
  * 打印棋盘
  * @param board
  */
 export function printBoard(board: Array<number | string>) {
-  console.table([
-    board.slice(0, 4),
-    board.slice(4, 8),
-    board.slice(8, 12),
-    board.slice(12, 16),
-  ]);
+  consoleLog(board.slice(0, 4));
+  consoleLog(board.slice(4, 8));
+  consoleLog(board.slice(8, 12));
+  consoleLog(board.slice(12, 16));
 }
 
 function getValidNumCount(arr: Array<number | string>) {
